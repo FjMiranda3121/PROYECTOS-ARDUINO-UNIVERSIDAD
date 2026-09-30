@@ -1,0 +1,10 @@
+# Archivos de compilación y temporales de Arduino
+*.hex
+*.elf
+*.o
+build/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
