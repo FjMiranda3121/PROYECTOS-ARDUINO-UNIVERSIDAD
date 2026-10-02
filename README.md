@@ -11,6 +11,6 @@ Repositorio con los proyectos, scripts de código e informes de prácticas de la
 
 ### Corte 1
 * **`01_PROY_SEMAFORO`**: Control de secuencia de luces para simulación de semáforo.
-
+* **`PROY_EMPRE_ECORUTAS`**: Proyecto de emprendimiento e innovación con tecnología IoT. Incluye código, esquema y documentación.
 ---
 *Más prototipos en documentación progresiva.*
