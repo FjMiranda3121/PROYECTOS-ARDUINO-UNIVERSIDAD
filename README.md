@@ -1,26 +1,23 @@
-**# Colección de Prototipos y Prácticas Arduino**
+# Colección de Prototipos y Prácticas Arduino
 
 Repositorio con los proyectos, scripts de código e informes de prácticas de laboratorio desarrollados durante la carrera universitaria.
 
-**##  Tecnologías y Herramientas**
+## Tecnologías y Herramientas
 
-* ****Microcontrolador:**** Arduino Uno / IDE de Arduino
+* **Microcontrolador:** Arduino Uno / IDE de Arduino
+* **Componentes:** LEDs, Servomotores, Potenciómetros, Sensórica varia
+* **Lenguaje:** C++ / Wiring
 
-* ****Componentes:**** LEDs, Servomotores, Potenciómetros, Sensórica varia
+## Prototipos Incluidos
 
-* ****Lenguaje:**** C++ / Wiring
+### Corte 1
 
-**##  Prototipos Incluidos**
+* **`01_PROY_SEMAFORO`**: Control de secuencia de luces para simulación de semáforo.
+* **`02_PROY_SECUENCIA_LEDS`**: Secuencia de LEDs controlada mediante un pulsador y un potenciómetro para modificar su dirección y velocidad.
 
-**### Corte 1**
+### Proyectos Extraordinarios
 
-* ****`01_PROY_SEMAFORO`****: Control de secuencia de luces para simulación de semáforo.
-
-* ****`02_PROY_SECUENCIA_LEDS`****: Secuencia de LEDs controlada mediante un pulsador y un potenciómetro para modificar su dirección y velocidad.
-
-**### Proyectos Extraordinarios**
-
-* ****`PROY_EMPRE_ECORUTAS`****: Proyecto de emprendimiento e innovación con tecnología IoT, desarrollado como iniciativa complementaria a las actividades académicas. Incluye código, esquema y documentación.
+* **`PROY_EMPRE_ECORUTAS`**: Proyecto de emprendimiento e innovación con tecnología IoT, desarrollado como iniciativa complementaria a las actividades académicas. Incluye código, esquema y documentación.
 
 ---
 
