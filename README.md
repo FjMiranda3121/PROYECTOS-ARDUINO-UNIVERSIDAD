@@ -14,10 +14,12 @@ Repositorio con los proyectos, scripts de código e informes de prácticas de la
 
 * **`01_PROY_SEMAFORO`**: Control de secuencia de luces para simulación de semáforo.
 * **`02_PROY_SECUENCIA_LEDS`**: Secuencia de LEDs controlada mediante un pulsador y un potenciómetro para modificar su dirección y velocidad.
+* **`03_PROY_SERVOMOTOR`**: Control de posicionamiento y barrido con servomotor.
 
 ### Proyectos Extraordinarios
 
 * **`PROY_EMPRE_ECORUTAS`**: Proyecto de emprendimiento e innovación con tecnología IoT, desarrollado como iniciativa complementaria a las actividades académicas. Incluye código, esquema y documentación.
+
 
 ---
 
