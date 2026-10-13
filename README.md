@@ -18,7 +18,7 @@ Repositorio con los proyectos, scripts de código e informes de prácticas de la
 
 ### Proyectos Extraordinarios
 
-* **`PROY_EMPRE_ECORUTAS`**: Proyecto de emprendimiento e innovación con tecnología IoT, desarrollado como iniciativa complementaria a las actividades académicas. Incluye código, esquema y documentación.
+* **`PROY_EMPRE_ECORUTAS`**: Proyecto de emprendimiento e innovación con tecnología IoT y Web API C# (.NET / SQLite). Incluye código fuente de la API, esquemas y documentación.
 
 
 ---
