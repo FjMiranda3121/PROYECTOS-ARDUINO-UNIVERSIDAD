@@ -1,0 +1,21 @@
+# Archivos de compilación y temporales de Arduino
+*.hex
+*.elf
+*.o
+build/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# C# / .NET Build Artifacts
+**/bin/
+**/obj/
+
+# Base de datos local SQLite
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+ecorutas.db

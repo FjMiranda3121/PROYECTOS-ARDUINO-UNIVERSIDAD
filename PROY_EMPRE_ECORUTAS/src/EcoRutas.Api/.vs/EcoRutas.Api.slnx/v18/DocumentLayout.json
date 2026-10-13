@@ -1,0 +1,173 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|c:\\users\\frank\\source\\repos\\ecorutas.api\\dtos\\medicionresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|solutionrelative:dtos\\medicionresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|c:\\users\\frank\\source\\repos\\ecorutas.api\\models\\medicion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|solutionrelative:models\\medicion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|c:\\users\\frank\\source\\repos\\ecorutas.api\\services\\medicionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|solutionrelative:services\\medicionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|c:\\users\\frank\\source\\repos\\ecorutas.api\\security\\apikeyattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|solutionrelative:security\\apikeyattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|c:\\users\\frank\\source\\repos\\ecorutas.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|c:\\users\\frank\\source\\repos\\ecorutas.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|c:\\users\\frank\\source\\repos\\ecorutas.api\\controllers\\medicionescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|solutionrelative:controllers\\medicionescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|c:\\users\\frank\\source\\repos\\ecorutas.api\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|solutionrelative:data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|c:\\users\\frank\\source\\repos\\ecorutas.api\\models\\caneca.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9A721A16-6FED-062F-0AEF-5DFD2E885FF8}|EcoRutas.Api.csproj|solutionrelative:models\\caneca.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-10-12T22:15:33.901Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ApiKeyAttribute.cs",
+              "DocumentMoniker": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Security\\ApiKeyAttribute.cs",
+              "RelativeDocumentMoniker": "Security\\ApiKeyAttribute.cs",
+              "ToolTip": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Security\\ApiKeyAttribute.cs",
+              "RelativeToolTip": "Security\\ApiKeyAttribute.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-12T22:15:04.996Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MedicionService.cs",
+              "DocumentMoniker": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Services\\MedicionService.cs",
+              "RelativeDocumentMoniker": "Services\\MedicionService.cs",
+              "ToolTip": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Services\\MedicionService.cs",
+              "RelativeToolTip": "Services\\MedicionService.cs",
+              "ViewState": "AgIAADsAAAAAAAAAAAAwwGEAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-12T22:09:49.31Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MedicionResponse.cs",
+              "DocumentMoniker": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\DTOs\\MedicionResponse.cs",
+              "RelativeDocumentMoniker": "DTOs\\MedicionResponse.cs",
+              "ToolTip": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\DTOs\\MedicionResponse.cs",
+              "RelativeToolTip": "DTOs\\MedicionResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-12T22:08:35.142Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Medicion.cs",
+              "DocumentMoniker": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Models\\Medicion.cs",
+              "RelativeDocumentMoniker": "Models\\Medicion.cs",
+              "ToolTip": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Models\\Medicion.cs",
+              "RelativeToolTip": "Models\\Medicion.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-12T22:05:14.085Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-12T22:01:21.97Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "MedicionesController.cs",
+              "DocumentMoniker": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Controllers\\MedicionesController.cs",
+              "RelativeDocumentMoniker": "Controllers\\MedicionesController.cs",
+              "ToolTip": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Controllers\\MedicionesController.cs",
+              "RelativeToolTip": "Controllers\\MedicionesController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABQAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-12T22:12:41.508Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Caneca.cs",
+              "DocumentMoniker": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Models\\Caneca.cs",
+              "RelativeDocumentMoniker": "Models\\Caneca.cs",
+              "ToolTip": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Models\\Caneca.cs",
+              "RelativeToolTip": "Models\\Caneca.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-12T22:03:24.18Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "Data\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\frank\\source\\repos\\EcoRutas.Api\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "Data\\AppDbContext.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-12T22:02:07.124Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
