@@ -19,3 +19,6 @@ desktop.ini
 *.db-wal
 *.db-shm
 ecorutas.db
+
+# Visual Studio temporary files & caches
+**/.vs/
