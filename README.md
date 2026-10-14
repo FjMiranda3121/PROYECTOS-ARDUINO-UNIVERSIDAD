@@ -18,7 +18,7 @@ Repositorio con los proyectos, scripts de código e informes de prácticas de la
 * **`04_PROY_SENsOR_SERVOMOTOR`**: Prototipo dirigido sensor conjunto servomotor.
 ### Proyectos Extraordinarios
 
-* **`PROY_EMPRE_ECORUTAS`**: Proyecto de emprendimiento e innovación con tecnología IoT y Web API C# (.NET / SQLite). Incluye código fuente de la API, esquemas y documentación.
+* **`PROY_EMPRE_ECORUTAS`**: Proyecto de emprendimiento e innovación IoT con Web API C# (.NET Core), persistencia en PostgreSQL con Entity Framework Core Migrations y contenedorización con Docker.
 
 
 ---
