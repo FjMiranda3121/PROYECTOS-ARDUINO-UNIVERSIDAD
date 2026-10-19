@@ -6,7 +6,7 @@ namespace EcoRutas.Api.Controllers
 {
 
     [ApiController]
-    [Route("api/v2/[controller]")]
+    [Route("api/v3/[controller]")]
     public class MedicionesController : ControllerBase
     {
         private readonly MedicionService _mediicionService;

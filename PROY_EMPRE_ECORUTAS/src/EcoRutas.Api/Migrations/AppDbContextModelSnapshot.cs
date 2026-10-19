@@ -27,11 +27,20 @@ namespace EcoRutas.Api.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean");
+
                     b.Property<double>("DistanciaCriticaCm")
                         .HasColumnType("double precision");
 
                     b.Property<string>("EstadoActual")
                         .HasColumnType("text");
+
+                    b.Property<double>("Latitud")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Longitud")
+                        .HasColumnType("double precision");
 
                     b.Property<double>("ProfundidadMaxCm")
                         .HasColumnType("double precision");
@@ -75,6 +84,100 @@ namespace EcoRutas.Api.Migrations
                     b.ToTable("Mediciones");
                 });
 
+            modelBuilder.Entity("EcoRutas.Api.Models.Recoleccion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CanecaId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaHora")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CanecaId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Recolecciones");
+                });
+
+            modelBuilder.Entity("EcoRutas.Api.Models.Rol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nombre = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nombre = "OPERADOR"
+                        });
+                });
+
+            modelBuilder.Entity("EcoRutas.Api.Models.Usuario", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RolId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("RolId");
+
+                    b.ToTable("Usuarios");
+                });
+
             modelBuilder.Entity("EcoRutas.Api.Models.Medicion", b =>
                 {
                     b.HasOne("EcoRutas.Api.Models.Caneca", "Caneca")
@@ -86,9 +189,51 @@ namespace EcoRutas.Api.Migrations
                     b.Navigation("Caneca");
                 });
 
+            modelBuilder.Entity("EcoRutas.Api.Models.Recoleccion", b =>
+                {
+                    b.HasOne("EcoRutas.Api.Models.Caneca", "Caneca")
+                        .WithMany("Recolecciones")
+                        .HasForeignKey("CanecaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EcoRutas.Api.Models.Usuario", "Usuario")
+                        .WithMany("Recolecciones")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Caneca");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("EcoRutas.Api.Models.Usuario", b =>
+                {
+                    b.HasOne("EcoRutas.Api.Models.Rol", "Rol")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Rol");
+                });
+
             modelBuilder.Entity("EcoRutas.Api.Models.Caneca", b =>
                 {
                     b.Navigation("Mediciones");
+
+                    b.Navigation("Recolecciones");
+                });
+
+            modelBuilder.Entity("EcoRutas.Api.Models.Rol", b =>
+                {
+                    b.Navigation("Usuarios");
+                });
+
+            modelBuilder.Entity("EcoRutas.Api.Models.Usuario", b =>
+                {
+                    b.Navigation("Recolecciones");
                 });
 #pragma warning restore 612, 618
         }

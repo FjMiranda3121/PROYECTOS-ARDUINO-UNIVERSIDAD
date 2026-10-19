@@ -1,67 +1,71 @@
-
+using EcoRutas.Api.Configurations;
 using EcoRutas.Api.Data;
 using EcoRutas.Api.Models;
 using EcoRutas.Api.Services;
+using EcoRutas.Api.Services.Interface;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Registrar base de datos y servicios
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// 1. Configurar Opciones Fuertemente Tipadas (JwtSettings)
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+
+// 2. Registrar el Servicio de Autenticación en la Inyección de Dependencias
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<MedicionService>();
-builder.Services.AddControllers();
-// RT10 - Habilitar CORS (Permitir peticiones desde navegadores web)
-builder.Services.AddCors(options =>
+builder.Services.AddScoped<ICanecaService, CanecaService>();
+builder.Services.AddScoped<IRecoleccionService, RecoleccionService>();
+
+// 3. Configurar el Middleware de Autenticación con JWT Bearer
+builder.Services.AddAuthentication(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false; // En producción Render se encarga de HTTPS
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings!.SecretKey)),
+        ValidateIssuer = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidateAudience = true,
+        ValidAudience = jwtSettings.Audience,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero // Expira de forma exacta sin desfasajes de tiempo
+    };
 });
 
-// RT09 - Servicio de monitoreo (Healthcheck)
-builder.Services.AddHealthChecks();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
+
+
+
 
 var app = builder.Build();
 
-// 2. Configurar el pipeline HTTP
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
-app.UseHttpsRedirection();
-app.UseAuthorization(); // Importante para la seguridad futura
-app.UseCors("AllowAll");
+
+app.UseRouting();
+
+// ORDEN CRÍTICO DE SECURITY MIDDLEWARES:
+// 1. Quien eres (Autenticación)
+app.UseAuthentication();
+
+// 2. Qué puedes hacer (Autorización / Roles)
+app.UseAuthorization();
+
 app.MapControllers();
 
-
-
-// 3. Sembrado de datos limpio y directo
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    db.Database.EnsureCreated();
-
-    if (!db.Canecas.Any(c => c.Id == "CAN-001"))
-    {
-        db.Canecas.Add(new Caneca
-        {
-            Id = "CAN-001",
-            Ubicacion = "Laboratorio Prototipo",
-            ProfundidadMaxCm = 30.0,
-            DistanciaCriticaCm = 6.0,
-            EstadoActual = "NORMAL"
-        });
-
-        db.SaveChanges();
-    }
-}
-app.MapHealthChecks("/health");
 app.Run();

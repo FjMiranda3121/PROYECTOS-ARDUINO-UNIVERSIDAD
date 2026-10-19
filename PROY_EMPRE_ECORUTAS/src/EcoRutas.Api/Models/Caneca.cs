@@ -8,11 +8,19 @@
         public required double ProfundidadMaxCm { get; set; }
         public required double DistanciaCriticaCm { get; set; }
 
+
         // Nullable (?) porque al registrar la caneca por primera vez, no tiene estado
-        public string? EstadoActual {  get; set; }
+        public string? EstadoActual { get; set; }
 
+        // Bandera para eliminación lógica (Soft Delete - RN07)
+        public bool Activa { get; set; } = true;
 
-        // Relación: Una caneca tiene un historial de MUCHAS mediciones
+        // Coordenadas GPS para renderizado en mapa (Leaflet.js)
+        public required double Latitud { get; set; }
+        public required double Longitud { get; set; }
+
+        // Propiedades de navegación inversa
         public ICollection<Medicion> Mediciones { get; set; } = new List<Medicion>();
+        public ICollection<Recoleccion> Recolecciones { get; set; } = new List<Recoleccion>();
     }
 }
