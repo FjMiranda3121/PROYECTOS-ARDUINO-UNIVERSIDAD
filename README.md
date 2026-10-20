@@ -4,9 +4,10 @@ Repositorio con los proyectos, scripts de código e informes de prácticas de la
 
 ## Tecnologías y Herramientas
 
-* **Microcontrolador:** Arduino Uno / IDE de Arduino
+* **Microcontrolador:** Arduino Uno, Esp32 / IDE de Arduino
 * **Componentes:** LEDs, Servomotores, Potenciómetros, Sensórica varia
 * **Lenguaje:** C++ / Wiring
+*  **Backend & IoT:** C# / .NET Core, PostgreSQL, Docker, JWT Auth
 
 ## Prototipos Incluidos
 
@@ -18,7 +19,7 @@ Repositorio con los proyectos, scripts de código e informes de prácticas de la
 * **`04_PROY_SENsOR_SERVOMOTOR`**: Prototipo dirigido sensor conjunto servomotor.
 ### Proyectos Extraordinarios
 
-* **`PROY_EMPRE_ECORUTAS`**: Plataforma IoT y backend C# v3.0 (.NET Core / PostgreSQL Neon). Incluye RBAC con JWT/BCrypt, gestión de recolecciones, borrado híbrido y documentación de arquitectura.
+* **`PROY_EMPRE_ECORUTAS`**: Plataforma IoT y backend C# v3.0 (.NET Core / PostgreSQL en Neon). Incluye scripts en el módulo `EcoRutas.Arduino` con arquitectura de secretos (`secrets.h`), y una Web API con control de acceso RBAC (JWT/BCrypt), gestión de recolecciones, contenedorización con Docker y borrado híbrido (RN07). Incluye documentación de la arquitectura.
 
 
 ---
