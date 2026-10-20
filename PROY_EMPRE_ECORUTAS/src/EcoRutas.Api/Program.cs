@@ -25,12 +25,16 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: CorsConfig,
                         policy =>
                         {
-                            policy.WithOrigins("http://127.0.0.1:5500",
-                                                "http://localhost:5500")
+                            policy.WithOrigins(
+                                                "https://ecorutas-frontend.vercel.app/",
+                                                "https://ecorutas-frontend.onrender.com",
+                                                "http://localhost:5500",
+                                                "http://127.0.0.1:5500")
                                   .AllowAnyHeader()
                                   .AllowAnyMethod();
                         });
 });
+
 // 2. Registrar el Servicio de Autenticación en la Inyección de Dependencias
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<MedicionService>();
