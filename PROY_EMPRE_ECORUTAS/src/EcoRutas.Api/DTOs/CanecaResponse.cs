@@ -10,5 +10,6 @@
         public bool Activa { get; set; }
         public required double Latitud { get; set; }
         public required double Longitud { get; set; }
+        public double PorcentajeLlenado { get; set; }
     }
 }
