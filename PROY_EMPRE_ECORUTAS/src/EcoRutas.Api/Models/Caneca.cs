@@ -1,4 +1,6 @@
-﻿namespace EcoRutas.Api.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace EcoRutas.Api.Models
 {
     public class Caneca
     {
@@ -22,5 +24,8 @@
         // Propiedades de navegación inversa
         public ICollection<Medicion> Mediciones { get; set; } = new List<Medicion>();
         public ICollection<Recoleccion> Recolecciones { get; set; } = new List<Recoleccion>();
+
+        [NotMapped]
+        public double PorcentajeLlenado { get; set; }
     }
 }

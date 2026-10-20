@@ -19,30 +19,76 @@ namespace EcoRutas.Api.Services
         public async Task<List<CanecaResponse>> ObtenerTodasAsync(bool soloActivas = true)
         {
             var query = _context.Canecas.AsQueryable();
+
             if (soloActivas)
             {
                 query = query.Where(c => c.Activa);
             }
 
-            return await query
-                .Select(c => new CanecaResponse
+            // Proyectamos primero los datos necesarios y la última medición desde la BD
+            var canecasDb = await query
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Ubicacion,
+                    c.ProfundidadMaxCm,
+                    c.DistanciaCriticaCm,
+                    c.EstadoActual,
+                    c.Activa,
+                    c.Latitud,
+                    c.Longitud,
+                    UltimaDistancia = c.Mediciones
+                        .OrderByDescending(m => m.FechaLectura)
+                        .Select(m => (double?)m.DistanciaCm)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            // Calculamos el porcentaje en memoria y mapeamos al Response final
+            return canecasDb.Select(c =>
+            {
+                double porcentaje = 0;
+                if (c.UltimaDistancia.HasValue && c.ProfundidadMaxCm > 0)
+                {
+                    porcentaje = ((c.ProfundidadMaxCm - c.UltimaDistancia.Value) / c.ProfundidadMaxCm) * 100;
+                    porcentaje = Math.Clamp(Math.Round(porcentaje, 2), 0, 100);
+                }
+
+                return new CanecaResponse
                 {
                     Id = c.Id,
                     Ubicacion = c.Ubicacion,
                     ProfundidadMaxCm = c.ProfundidadMaxCm,
                     DistanciaCriticaCm = c.DistanciaCriticaCm,
                     EstadoActual = c.EstadoActual,
-                    Activa= c.Activa,
+                    Activa = c.Activa,
                     Latitud = c.Latitud,
-                    Longitud = c.Longitud
-                })
-                .ToListAsync();
+                    Longitud = c.Longitud,
+                    PorcentajeLlenado = porcentaje
+                };
+            }).ToList();
         }
+
         // 2. OBTENER POR ID
         public async Task<CanecaResponse?> ObtenerPorIdAsync(string id)
         {
-            var caneca = await _context.Canecas.FindAsync(id);
+            // Usamos Include en lugar de FindAsync para poder consultar las Mediciones relacionadas
+            var caneca = await _context.Canecas
+                .Include(c => c.Mediciones)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
             if (caneca == null) return null;
+
+            double porcentaje = 0;
+            var ultimaMedicion = caneca.Mediciones
+                .OrderByDescending(m => m.FechaLectura)
+                .FirstOrDefault();
+
+            if (ultimaMedicion != null && caneca.ProfundidadMaxCm > 0)
+            {
+                porcentaje = ((caneca.ProfundidadMaxCm - ultimaMedicion.DistanciaCm) / caneca.ProfundidadMaxCm) * 100;
+                porcentaje = Math.Clamp(Math.Round(porcentaje, 2), 0, 100);
+            }
 
             return new CanecaResponse
             {
@@ -53,7 +99,8 @@ namespace EcoRutas.Api.Services
                 EstadoActual = caneca.EstadoActual,
                 Activa = caneca.Activa,
                 Latitud = caneca.Latitud,
-                Longitud = caneca.Longitud
+                Longitud = caneca.Longitud,
+                PorcentajeLlenado = porcentaje
             };
         }
         // 3. CREAR CANECA
