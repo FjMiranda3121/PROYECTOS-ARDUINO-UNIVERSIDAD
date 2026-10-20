@@ -19,6 +19,17 @@ namespace EcoRutas.Api.Controllers
             _recoleccionService = recoleccionService;
         }
 
+        /// <summary>
+        /// Retorna los puntos criticos y en atencion exclusivamente para la ruta del operador.
+        /// </summary>
+        [HttpGet("pendientes")]
+        [Authorize(Roles = "OPERADOR,ADMIN")]
+        public async Task<IActionResult> ObtenerRutasPendientes()
+        {
+            var rutas = await _recoleccionService.ObtenerRutasPendientesAsync();
+            return Ok(rutas);
+        }
+
         // POST: /api/v3/recolecciones (RF-08 & RN08: Confirmación de Vaciado)
         [HttpPost]
         public async Task<IActionResult> RegistrarRecoleccion([FromBody] RecoleccionCreateDto dto)

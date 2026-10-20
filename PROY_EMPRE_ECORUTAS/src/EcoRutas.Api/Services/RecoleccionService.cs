@@ -15,6 +15,50 @@ namespace EcoRutas.Api.Services
             _context = context;
         }
 
+        public async Task<IEnumerable<RutaPendienteDto>> ObtenerRutasPendientesAsync()
+        {
+            // 1. Consultar a la base de datos con EF Core
+            var canecasPendientes = await _context.Canecas
+                .Where(c => c.Activa && (c.EstadoActual == "CRITICO" || c.EstadoActual == "ATENCION"))
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Ubicacion,
+                    c.Latitud,
+                    c.Longitud,
+                    EstadoActual = c.EstadoActual ?? "DESCONOCIDO",
+                    c.ProfundidadMaxCm,
+                    // Proyección de la última distancia registrada en Mediciones
+                    UltimaDistancia = c.Mediciones
+                        .OrderByDescending(m => m.FechaLectura) // Ajustar al nombre del campo de fecha en tu entidad Medicion
+                        .Select(m => (double?)m.DistanciaCm) // Ajustar al nombre de la propiedad de distancia en Medicion
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            // 2. Calcular el porcentaje de llenado proyectando el DTO en memoria
+            return canecasPendientes.Select(c =>
+            {
+                double porcentaje = 0;
+
+                if (c.UltimaDistancia.HasValue && c.ProfundidadMaxCm > 0)
+                {
+                    porcentaje = ((c.ProfundidadMaxCm - c.UltimaDistancia.Value) / c.ProfundidadMaxCm) * 100;
+                    porcentaje = Math.Clamp(Math.Round(porcentaje, 2), 0, 100);
+                }
+
+                return new RutaPendienteDto(
+                    c.Id,
+                    c.Ubicacion,
+                    c.Latitud,
+                    c.Longitud,
+                    c.EstadoActual,
+                    porcentaje
+                );
+            })
+            .OrderByDescending(r => r.PorcentajeLlenado);
+        }
+
         // 1. REGISTRAR RECOLECCIÓN (RF-08 & RN08) 
         public async Task<RecoleccionResponse> RegistrarRecoleccionAsync(RecoleccionCreateDto dto, Guid usuarioId)
         {
