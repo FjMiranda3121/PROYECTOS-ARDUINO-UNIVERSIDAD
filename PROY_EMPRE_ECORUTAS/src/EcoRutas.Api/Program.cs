@@ -19,6 +19,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 
+var CorsConfig = "_corsConfig";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: CorsConfig,
+                        policy =>
+                        {
+                            policy.WithOrigins("http://127.0.0.1:5500",
+                                                "http://localhost:5500")
+                                  .AllowAnyHeader()
+                                  .AllowAnyMethod();
+                        });
+});
 // 2. Registrar el Servicio de Autenticación en la Inyección de Dependencias
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<MedicionService>();
@@ -59,6 +71,7 @@ var app = builder.Build();
 
 app.UseRouting();
 
+app.UseCors(CorsConfig);
 // ORDEN CRÍTICO DE SECURITY MIDDLEWARES:
 // 1. Quien eres (Autenticación)
 app.UseAuthentication();
