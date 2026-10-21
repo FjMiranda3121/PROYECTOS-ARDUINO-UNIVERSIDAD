@@ -1,75 +1,95 @@
-document.addEventListener('DOMContentLoaded', function(){
+// CONTROLADOR DE AUTENTICACIÓN Y LOGIN
+const API_BASE_URL = 'https://ecorutas-api.onrender.com/api/v3';
 
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Si ya existe un token activo, redirigir según el rol
+    const tokenExistente = localStorage.getItem('ecoRutas_jwt');
+    if (tokenExistente) {
+        try {
+            const payload = JSON.parse(atob(tokenExistente.split('.')[1]));
+            const rol = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] 
+                     || payload.role 
+                     || payload['role'];
+            
+            if (rol === 'OPERADOR') {
+                window.location.replace('operador.html');
+            } else {
+                window.location.replace('dashboard.html');
+            }
+            return;
+        } catch (e) {
+            localStorage.removeItem('ecoRutas_jwt');
+        }
+    }
 
     const formLogin = document.getElementById('formLogin');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const btnLoginSubmit = document.getElementById('btnLoginSubmit');
+    const errorLogin = document.getElementById('errorLogin');
 
-    if(formLogin){
-        formLogin.addEventListener('submit', async function name(e) {
-        // 1. Evitar que la pagina se recargue al enviar el formulario
+    if (!formLogin) return;
+
+    // 2. Evento de Envío del Formulario
+    formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
-        //2. Capturar los valores de los inputs y elementos del DOM
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const errorDiv = document.getElementById('errorMensaje');
-        const btnSubmit = this.querySelector('button[type="submit"]');
 
-            if (!errorDiv){
-                console.error("Falta el <div id='errorMensaje'></div>");
-                return;
-            }
-            const email = emailInput.value;
-            const password = passwordInput.value;
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
 
-        // Limpiar errores previos y dar feedback visual de carga
-        errorDiv.classList.add('hidden');
-        btnSubmit.textContent = 'Autenticado...';
-        btnSubmit.disabled = true;
+        if (errorLogin) errorLogin.classList.add('hidden');
 
-        
-        //3. Hacer la petición HTTP POST 
+        // Estado visual de carga en el botón
+        const textoOriginalBoton = btnLoginSubmit.innerHTML;
+        btnLoginSubmit.disabled = true;
+        btnLoginSubmit.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Conectando...`;
+
         try {
-            const response = await fetch('https://ecorutas-api.onrender.com/api/v3/auth/login',{
+            const respuesta = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    Email:email,
-                    Password:password
-                })
+                body: JSON.stringify({ email, password })
             });
 
-            //4. Evaluar respuesta del servidor
-            if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem('ecoRutas_jwt', data.token);
-
-                // Decodificar el rol contenido en las claims del JWT
-                const payload = JSON.parse(atob(data.token.split('.')[1]));
-                const rol = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role;
-
-                // Redirección inteligente según el rol del usuario
-                if (rol === 'ADMIN') {
-                    window.location.href = 'dashboard.html';
-                } else if (rol === 'OPERADOR') {
-                    window.location.href = 'operador.html';
-                } else {
-                    window.location.href = 'dashboard.html'; // Fallback por defecto
-                }
+            if (!respuesta.ok) {
+                const errorData = await respuesta.json().catch(() => ({}));
+                throw new Error(errorData.detail || errorData.message || 'Credenciales incorrectas');
             }
+
+            const data = await respuesta.json();
+            const token = data.token || data.jwt || data;
+
+            if (!token || typeof token !== 'string') {
+                throw new Error('Respuesta de autenticación no válida.');
+            }
+
+            // Guardar token JWT en almacenamiento local
+            localStorage.setItem('ecoRutas_jwt', token);
+
+            // Decodificar JWT para verificar rol de acceso
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const rol = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] 
+                     || payload.role 
+                     || payload['role'];
+
+            // Redirección según ROL asignado
+            if (rol === 'OPERADOR') {
+                window.location.replace('operador.html');
+            } else {
+                window.location.replace('dashboard.html');
+            }
+
         } catch (error) {
-            // Error de red (Render dormido, sin internet, problema de CORS)
-            console.error("Error de conexión:", error);
-            errorDiv.textContent = 'Error de conexión con el servidor de EcoRutas.';
-            errorDiv.classList.remove('hidden');
-        }finally{
-            // Restaurar el botón sin importar el resultado
-            btnSubmit.textContent = 'Login';
-            btnSubmit.disabled = false;
+            console.error("Error al iniciar sesión:", error);
+            if (errorLogin) {
+                errorLogin.textContent = error.message || 'Credenciales incorrectas o servidor no disponible.';
+                errorLogin.classList.remove('hidden');
+            }
+        } finally {
+            btnLoginSubmit.disabled = false;
+            btnLoginSubmit.innerHTML = textoOriginalBoton;
         }
-        
     });
-    } else{
-        console.error("Fallo estructural: No se encontro el formulario con id 'formLogin' en el HTML")
-    }
 });

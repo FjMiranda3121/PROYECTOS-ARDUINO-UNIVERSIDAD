@@ -40,8 +40,8 @@ try {
 
 // 2. CONFIGURACIÓN GLOBAL Y MAPA PRINCIPAL
 const API_BASE_URL = 'https://ecorutas-api.onrender.com/api/v3';
-const CAMPUS_UNISINU_PLAZA_COLON = [10.39079, -75.49664];
-const ZOOM_INICIAL = 17;
+const CENTRO_CARTAGENA = [10.39079, -75.49664];
+const ZOOM_INICIAL = 18.4;
 
 let mapaPrincipal = null;
 let marcadoresMap = {};
@@ -51,13 +51,43 @@ let canecaSeleccionadaId = null;
 function inicializarMapaPrincipal() {
     if (mapaPrincipal) return;
     
-    mapaPrincipal = L.map('mapaPrincipal').setView(CAMPUS_UNISINU_PLAZA_COLON, ZOOM_INICIAL);
+    mapaPrincipal = L.map('mapaPrincipal').setView(CENTRO_CARTAGENA, ZOOM_INICIAL);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap / EcoRutas v3.0'
     }).addTo(mapaPrincipal);
 }
+
+// 3. CAMBIO DE VISTAS Y MENÚ LATERAL DESPLEGABLE
+window.cambiarVista = function(vista) {
+    const vistaMapa = document.getElementById('vistaMapa');
+    const vistaMediciones = document.getElementById('vistaMediciones');
+    const navBtnMapa = document.getElementById('navBtnMapa');
+    const navBtnMediciones = document.getElementById('navBtnMediciones');
+    const tituloSeccion = document.getElementById('tituloSeccion');
+
+    if (vista === 'mapa') {
+        vistaMapa.classList.remove('hidden');
+        vistaMediciones.classList.add('hidden');
+
+        navBtnMapa.className = "nav-item active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all bg-emerald-600 text-white shadow-md";
+        navBtnMediciones.className = "nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:bg-slate-800 hover:text-white";
+        
+        if (tituloSeccion) tituloSeccion.textContent = "Monitoreo en Vivo";
+        if (mapaPrincipal) setTimeout(() => mapaPrincipal.invalidateSize(), 200);
+
+    } else if (vista === 'mediciones') {
+        vistaMapa.classList.add('hidden');
+        vistaMediciones.classList.remove('hidden');
+
+        navBtnMediciones.className = "nav-item active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all bg-emerald-600 text-white shadow-md";
+        navBtnMapa.className = "nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:bg-slate-800 hover:text-white";
+
+        if (tituloSeccion) tituloSeccion.textContent = "Telemetría y Mediciones";
+        cargarMedicionesRecientes();
+    }
+};
 
 // CONTROLADOR VISUAL DE ESTADO API (ONLINE / OFFLINE)
 function actualizarEstadoApi(isOnline) {
@@ -83,8 +113,7 @@ function actualizarEstadoApi(isOnline) {
     }
 }
 
-// 3. AUXILIAR Y RENDERING DE CANECAS (GET /canecas)
-// Generar Pin Colorizado para Leaflet
+// 4. RENDERING Y LÓGICA DE CANECAS (GET /canecas)
 function crearIconoMapa(estado) {
     let colorBg = 'bg-green-500';
     let animacion = '';
@@ -136,16 +165,21 @@ async function cargarDatosCanecas() {
     }
 }
 
-// Actualización de Tarjetas KPI Superior
 function renderizarKPIs(canecas) {
     const total = canecas.length;
     let normal = 0, atencion = 0, critico = 0;
 
     canecas.forEach(c => {
-        const estado = c.estadoActual || 'NORMAL';
-        if (estado === 'NORMAL') normal++;
-        else if (estado === 'ATENCION') atencion++;
-        else if (estado === 'CRITICO') critico++;
+        // Mapeo flexible de porcentaje y estado segun C#
+        const porcentaje = c.porcentajellenado ?? c.porcentajeLlenado ?? c.Porcentajellenado ?? 0;
+        let estadoReal = c.estadoClasificado ?? c.estadoActual ?? 'NORMAL';
+
+        if (porcentaje >= 90) estadoReal = 'CRITICO';
+        else if (porcentaje >= 70) estadoReal = 'ATENCION';
+
+        if (estadoReal === 'NORMAL') normal++;
+        else if (estadoReal === 'ATENCION') atencion++;
+        else if (estadoReal === 'CRITICO') critico++;
     });
 
     document.getElementById('kpi-total').textContent = total;
@@ -162,7 +196,7 @@ window.centrarEnMapa = function(id) {
     // CASO 1: Deseleccionar (clic por segunda vez)
     if (canecaSeleccionadaId === id) {
         marker.closePopup();
-        mapaPrincipal.flyTo(CAMPUS_UNISINU_PLAZA_COLON, ZOOM_INICIAL, {
+        mapaPrincipal.flyTo(CENTRO_CARTAGENA, ZOOM_INICIAL, {
             animate: true,
             duration: 1.2
         });
@@ -187,17 +221,16 @@ function resaltarTarjeta(id) {
     quitarResaltadosTarjetas();
     const tarjeta = document.getElementById(`card-caneca-${id}`);
     if (tarjeta) {
-        tarjeta.classList.add('ring-2', 'ring-blue-500', 'shadow-md');
+        tarjeta.classList.add('ring-2', 'ring-emerald-500', 'shadow-md');
     }
 }
 
 function quitarResaltadosTarjetas() {
     document.querySelectorAll('.card-caneca-item').forEach(el => {
-        el.classList.remove('ring-2', 'ring-blue-500', 'shadow-md');
+        el.classList.remove('ring-2', 'ring-emerald-500', 'shadow-md');
     });
 }
 
-// Renderizado de Marcadores e Historial Lateral
 function renderizarMapaYLista(canecas) {
     const contenedorLista = document.getElementById('listaCanecasContainer');
     if (!contenedorLista) return;
@@ -210,29 +243,36 @@ function renderizarMapaYLista(canecas) {
     }
 
     canecas.forEach(caneca => {
-        const estado = caneca.estadoActual || 'NORMAL';
-        const porcentaje = caneca.porcentajeLlenado ?? 0;
-        const isSelected = (caneca.id === canecaSeleccionadaId);
-        const claseResaltado = isSelected ? 'ring-2 ring-blue-500 shadow-md' : '';
+        // Mapeo unificado con C# Medicion/Caneca
+        const porcentaje = caneca.porcentajellenado ?? caneca.porcentajeLlenado ?? caneca.Porcentajellenado ?? 0;
+        let estadoReal = caneca.estadoClasificado ?? caneca.estadoActual ?? 'NORMAL';
 
-        // Estilos dinámicos según el ESTADO
+        if (porcentaje >= 90) {
+            estadoReal = 'CRITICO';
+        } else if (porcentaje >= 70) {
+            estadoReal = 'ATENCION';
+        }
+
+        const isSelected = (caneca.id === canecaSeleccionadaId);
+        const claseResaltado = isSelected ? 'ring-2 ring-emerald-500 shadow-md' : '';
+
         let colorCard = 'bg-green-50/80 border-green-300';
         let colorBadge = 'bg-green-100 text-green-800 border-green-400';
         let colorBarra = 'bg-green-500';
 
-        if (estado === 'ATENCION') {
+        if (estadoReal === 'ATENCION') {
             colorCard = 'bg-yellow-50/80 border-yellow-300';
             colorBadge = 'bg-yellow-100 text-yellow-800 border-yellow-400';
             colorBarra = 'bg-yellow-500';
-        } else if (estado === 'CRITICO') {
+        } else if (estadoReal === 'CRITICO') {
             colorCard = 'bg-red-50/80 border-red-300';
             colorBadge = 'bg-red-100 text-red-800 border-red-400';
             colorBarra = 'bg-red-600';
         }
 
-        // 1. Agregar o actualizar Marcador Colorizado en el Mapa
+        // 1. Agregar o actualizar Marcador Colorizado
         if (caneca.latitud && caneca.longitud) {
-            const iconoEstado = crearIconoMapa(estado);
+            const iconoEstado = crearIconoMapa(estadoReal);
 
             if (marcadoresMap[caneca.id]) {
                 marcadoresMap[caneca.id].setLatLng([caneca.latitud, caneca.longitud]);
@@ -243,14 +283,14 @@ function renderizarMapaYLista(canecas) {
                     <div class="text-center font-sans p-1">
                         <strong class="text-slate-800 text-sm">${caneca.id}</strong><br>
                         <span class="text-xs text-slate-500">${caneca.ubicacion}</span><br>
-                        <span class="text-xs font-bold text-slate-800">Estado: ${estado} (${porcentaje}%)</span>
+                        <span class="text-xs font-bold text-slate-800">Estado: ${estadoReal} (${porcentaje}%)</span>
                     </div>
                 `);
                 marcadoresMap[caneca.id] = marker;
             }
         }
 
-        // 2. Renderizar Casilla Tintada con el color de su Estado y evento Toggle
+        // 2. Renderizar Casilla Lateral
         const htmlCard = `
             <div id="card-caneca-${caneca.id}" 
                  class="card-caneca-item p-3 ${colorCard} border rounded-xl shadow-sm space-y-2 transition-all hover:shadow-md cursor-pointer ${claseResaltado}" 
@@ -263,7 +303,7 @@ function renderizarMapaYLista(canecas) {
                     
                     <div class="flex items-center gap-2">
                         <span class="px-2.5 py-0.5 text-[10px] font-black rounded-full border ${colorBadge}">
-                            ${estado}
+                            ${estadoReal}
                         </span>
                         
                         <!-- BOTÓN EDITAR -->
@@ -278,7 +318,7 @@ function renderizarMapaYLista(canecas) {
                     </div>
                 </div>
 
-                <!-- Barra Dinámica de Porcentaje -->
+                <!-- Barra Dinámica -->
                 <div>
                     <div class="flex justify-between text-[11px] font-bold text-slate-700 mb-1">
                         <span>Nivel de Llenado:</span>
@@ -294,7 +334,72 @@ function renderizarMapaYLista(canecas) {
     });
 }
 
-// 4. CREAR NUEVA CANECA (POST /canecas - MODAL)
+// 5. MÓDULO DE TELEMETRÍA (MAPEO EXACTO POSTMAN)
+window.cargarMedicionesRecientes = async function() {
+    const tbody = document.getElementById('tablaMedicionesBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400"><i class="fa-solid fa-spinner animate-spin mr-2"></i>Cargando lecturas desde Render...</td></tr>`;
+
+    try {
+        const respuesta = await fetch(`${API_BASE_URL}/mediciones`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!respuesta.ok) throw new Error(`HTTP Error Status: ${respuesta.status}`);
+
+        const jsonRaw = await respuesta.json();
+
+        // Extraer el arreglo de la propiedad "datos" que vimos en Postman
+        const listaMediciones = jsonRaw.datos || jsonRaw.data || (Array.isArray(jsonRaw) ? jsonRaw : []);
+
+        tbody.innerHTML = '';
+
+        if (listaMediciones.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No se encontraron lecturas en la base de datos.</td></tr>`;
+            return;
+        }
+
+        // Dentro de la función renderizar en cargarMedicionesRecientes:
+        listaMediciones.forEach(m => {
+            const id = m.id || '-';
+            const canecaId = m.canecaId || '-';
+            // Ahora lee directamente la propiedad distanciaCm enviada por el nuevo DTO
+            const distancia = m.distanciaCm ?? m.distanciaMedidaCm ?? m.distancia ?? 0;
+            const porcentaje = m.porcentajeEstimado ?? m.porcentajellenado ?? 0;
+            const estado = m.estado || m.estadoClasificado || 'NORMAL';
+            const fechaRaw = m.fechaRegistro || m.fechaLectura;
+            const fecha = fechaRaw ? new Date(fechaRaw).toLocaleString() : '-';
+
+            let colorBadge = 'bg-green-100 text-green-800 border-green-300';
+            if (estado === 'ATENCION') {
+                colorBadge = 'bg-yellow-100 text-yellow-800 border-yellow-300';
+            } else if (estado === 'CRITICO') {
+                colorBadge = 'bg-red-100 text-red-800 border-red-300';
+            }
+
+            const htmlRow = `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-3 font-mono text-[11px] font-bold text-slate-500 truncate max-w-[140px]" title="${id}">${id}</td>
+                    <td class="p-3 font-black text-slate-800">${canecaId}</td>
+                    <td class="p-3 text-center font-bold text-emerald-600">${distancia} cm</td>
+                    <td class="p-3 text-center">
+                        <span class="font-bold text-slate-700 mr-1.5">${porcentaje}%</span>
+                        <span class="px-2 py-0.5 text-[10px] font-black rounded-full border ${colorBadge}">${estado}</span>
+                    </td>
+                    <td class="p-3 text-right text-slate-500 font-medium">${fecha}</td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', htmlRow);
+        });
+
+    } catch (error) {
+        console.error("Error al cargar mediciones:", error);
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500 font-bold">Error al conectar con la API (${error.message}). Revisa la consola F12.</td></tr>`;
+    }
+};
+
+// 6. CREAR NUEVA CANECA (POST /canecas)
 let miniMapaFormulario = null;
 let markerFormulario = null;
 
@@ -309,7 +414,7 @@ if (btnAbrirModal) {
         
         setTimeout(() => {
             if (!miniMapaFormulario) {
-                miniMapaFormulario = L.map('miniMapaFormulario').setView(CAMPUS_UNISINU_PLAZA_COLON, ZOOM_INICIAL);
+                miniMapaFormulario = L.map('miniMapaFormulario').setView(CENTRO_CARTAGENA, ZOOM_INICIAL);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(miniMapaFormulario);
 
                 miniMapaFormulario.on('click', (e) => {
@@ -372,7 +477,7 @@ if (formNuevaCaneca) {
     });
 }
 
-// 5. EDITAR CANECA (PUT /canecas/{id} - MODAL)
+// 7. EDITAR CANECA (PUT /canecas/{id})
 let miniMapaEditar = null;
 let markerEditar = null;
 
@@ -471,7 +576,7 @@ if (formEditarCaneca) {
     });
 }
 
-// 6. ELIMINAR CANECA (DELETE /canecas/{id} - RN07)
+// 8. ELIMINAR CANECA (DELETE /canecas/{id})
 let idCanecaAEliminar = null;
 
 const modalEliminar = document.getElementById('modalEliminar');
@@ -528,13 +633,28 @@ if (btnConfirmarEliminar) {
     });
 }
 
-// 7. EVENTOS Y ARRANQUE AUTOMÁTICO
+// 9. INICIALIZACIÓN Y AUTO-REFRESH
 document.addEventListener('DOMContentLoaded', () => {
     inicializarMapaPrincipal();
     cargarDatosCanecas();
 
-    // Auto-refresh cada 5 segundos para sincronizar el estado del hardware ESP32
+    // Refréscate automático cada 5s para sincronizar mediciones del ESP32
     setInterval(cargarDatosCanecas, 5000);
+
+    // Toggle de Menú Lateral
+    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+    const sidebarNav = document.getElementById('sidebarNav');
+
+    if (btnToggleSidebar && sidebarNav) {
+        btnToggleSidebar.addEventListener('click', () => {
+            sidebarNav.classList.toggle('-ml-64');
+            setTimeout(() => {
+                if (mapaPrincipal) {
+                    mapaPrincipal.invalidateSize();
+                }
+            }, 300);
+        });
+    }
 
     const btnLogout = document.getElementById('btnLogout');
     if (btnLogout) {

@@ -1,30 +1,40 @@
-// 1. SEGURIDAD Y DECODIFICACIÓN DE JWT
+// 1. SEGURIDAD, AUTENTICACIÓN Y ROL (OPERADOR)
 const token = localStorage.getItem('ecoRutas_jwt');
 
 if (!token) {
     window.location.replace('login.html');
 }
 
-// Extraer el correo del operador desde el payload del JWT
+let emailOperador = '@operador';
+
 try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    const emailOperador = payload.email 
+    const rol = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] 
+             || payload.role 
+             || payload['role'];
+             
+    emailOperador = payload.email 
         || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] 
         || payload['sub'] 
-        || 'Operador Campo';
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        const userDisplay = document.getElementById('operadorEmail');
-        if (userDisplay) userDisplay.textContent = emailOperador;
-    });
+        || '@operador';
+
+    // Si un administrador ingresa aquí, lo redirigimos a su Dashboard
+    if (rol === 'ADMIN') {
+        window.location.replace('dashboard.html');
+    } else if (!rol) {
+        localStorage.removeItem('ecoRutas_jwt');
+        window.location.replace('login.html');
+    }
 } catch (e) {
-    console.warn("No se pudo decodificar el token JWT:", e);
+    console.error("Error al decodificar JWT:", e);
+    localStorage.removeItem('ecoRutas_jwt');
+    window.location.replace('login.html');
 }
 
-// 2. CONFIGURACIÓN GLOBAL
+// 2. CONFIGURACIÓN GLOBAL Y ESTADO DE CONEXIÓN
 const API_BASE_URL = 'https://ecorutas-api.onrender.com/api/v3';
+let canecaAConfirmarId = null;
 
-// CONTROLADOR VISUAL DE ESTADO API (ONLINE / OFFLINE)
 function actualizarEstadoApi(isOnline) {
     const container = document.getElementById('apiStatusContainer');
     const ping = document.getElementById('apiStatusPing');
@@ -34,179 +44,226 @@ function actualizarEstadoApi(isOnline) {
     if (!container || !dot || !text) return;
 
     if (isOnline) {
-        container.className = 'flex items-center gap-1.5 bg-green-500/20 px-2.5 py-1 rounded-full border border-green-400/30 transition-colors';
+        container.className = 'flex items-center gap-1.5 bg-green-950/80 px-2.5 py-1 rounded-full border border-green-800 transition-colors';
         if (ping) ping.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75';
-        dot.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-green-400';
-        text.className = 'text-[10px] font-black text-green-300 uppercase tracking-wider';
+        dot.className = 'relative inline-flex rounded-full h-2 w-2 bg-green-500';
+        text.className = 'text-[10px] font-bold text-green-300';
         text.textContent = 'Online';
     } else {
-        container.className = 'flex items-center gap-1.5 bg-red-500/20 px-2.5 py-1 rounded-full border border-red-400/30 transition-colors';
-        if (ping) ping.className = 'hidden'; // Ocultar animación si está offline
-        dot.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500';
-        text.className = 'text-[10px] font-black text-red-300 uppercase tracking-wider';
+        container.className = 'flex items-center gap-1.5 bg-red-950/80 px-2.5 py-1 rounded-full border border-red-800 transition-colors';
+        if (ping) ping.className = 'hidden';
+        dot.className = 'relative inline-flex rounded-full h-2 w-2 bg-red-500';
+        text.className = 'text-[10px] font-bold text-red-300';
         text.textContent = 'Offline';
     }
 }
-// 3. CONSULTAR RUTAS PENDIENTES (GET /recolecciones/pendientes)
-async function cargarRutasPriorizadas() {
-    const contenedorLista = document.getElementById('listaRutasContainer');
 
+// 3. CARGA DE RUTA PENDIENTE (RECOLECCIONES)
+async function cargarRutaOperador() {
     try {
+        // Petición exclusiva al controlador de recolecciones autorizadas para el operador
         const respuesta = await fetch(`${API_BASE_URL}/recolecciones/pendientes`, {
             method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
 
         if (!respuesta.ok) {
-            actualizarEstadoApi(false); // Servidor responde con error HTTP
-            if (respuesta.status === 401 || respuesta.status === 403) {
+            actualizarEstadoApi(false);
+            
+            if (respuesta.status === 401) {
                 localStorage.removeItem('ecoRutas_jwt');
                 window.location.replace('login.html');
                 return;
             }
-            throw new Error(`Error HTTP: ${respuesta.status}`);
+            
+            throw new Error(`Error en servidor: HTTP ${respuesta.status}`);
         }
 
-        const rutasPendientes = await respuesta.json();
-        actualizarEstadoApi(true); // Conexión exitosa -> API Online
-        renderizarRutas(rutasPendientes);
+        const rawData = await respuesta.json();
+        actualizarEstadoApi(true);
+
+        const pendientes = Array.isArray(rawData) ? rawData : (rawData.datos || rawData.$values || []);
+        renderizarCanecasOperador(pendientes);
 
     } catch (error) {
-        console.error("Error al obtener la ruta pendiente:", error);
-        actualizarEstadoApi(false); // Caída de red o timeout en Render -> API Offline
-        if (contenedorLista) {
-            contenedorLista.innerHTML = `
-                <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-center text-sm font-semibold">
-                    Error de conexión con la central en Render.
-                </div>`;
-        }
+        console.error("Error al obtener la ruta del operador:", error);
+        actualizarEstadoApi(false);
     }
 }
 
-function renderizarRutas(rutas) {
-    const contenedorLista = document.getElementById('listaRutasContainer');
+// 4. RENDERIZADO DE TARJETAS MÓVILES
+function renderizarCanecasOperador(canecas) {
+    const contenedor = document.getElementById('contenedorRutaOperador');
     const cantPendientes = document.getElementById('cantPendientes');
-    
-    if (!contenedorLista) return;
-    
-    contenedorLista.innerHTML = '';
-    if (cantPendientes) cantPendientes.textContent = rutas.length;
+    if (!contenedor) return;
 
-    if (rutas.length === 0) {
-        contenedorLista.innerHTML = `
-            <div class="bg-green-50 border border-green-200 p-6 rounded-2xl text-center">
-                <i class="fa-solid fa-circle-check text-green-500 text-4xl mb-2"></i>
-                <h3 class="font-bold text-green-800 text-base">¡Ruta Limpia!</h3>
-                <p class="text-xs text-green-600 mt-1">No hay contenedores críticos ni en atención actualmente.</p>
+    contenedor.innerHTML = '';
+
+    if (!Array.isArray(canecas) || canecas.length === 0) {
+        if (cantPendientes) cantPendientes.textContent = '0';
+        contenedor.innerHTML = `
+            <div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <i class="fa-solid fa-circle-check text-emerald-500 text-3xl mb-2"></i>
+                <p class="font-bold text-slate-700 text-sm">¡Ruta al día!</p>
+                <p class="text-xs text-slate-500 mt-1">No hay puntos requeridos por recolección en este momento.</p>
             </div>`;
         return;
     }
 
-    rutas.forEach(item => {
-        const porcentaje = item.porcentajeLlenado ?? 0;
-        const estado = item.estadoActual || 'CRITICO';
+    if (cantPendientes) cantPendientes.textContent = canecas.length.toString();
 
-        let colorBg = 'bg-red-50';
-        let colorBorder = 'border-red-200';
-        let colorBadge = 'bg-red-600 text-white';
+    // Ordenamiento por nivel de llenado descendente
+    canecas.sort((a, b) => {
+        const pA = a.porcentajeEstimado ?? a.porcentajellenado ?? a.porcentajeLlenado ?? 0;
+        const pB = b.porcentajeEstimado ?? b.porcentajellenado ?? b.porcentajeLlenado ?? 0;
+        return pB - pA;
+    });
+
+    canecas.forEach(c => {
+        const id = c.canecaId || c.id || c.Id || '-';
+        const porcentaje = c.porcentajeEstimado ?? c.porcentajellenado ?? c.porcentajeLlenado ?? 0;
+        let estado = c.estado || c.estadoClasificado || c.estadoActual || 'NORMAL';
+
+        if (porcentaje >= 90) estado = 'CRITICO';
+        else if (porcentaje >= 70) estado = 'ATENCION';
+
+        let colorCard = 'border-slate-200 bg-white';
+        let colorBadge = 'bg-green-100 text-green-800 border-green-300';
+        let colorBarra = 'bg-green-500';
 
         if (estado === 'ATENCION') {
-            colorBg = 'bg-yellow-50';
-            colorBorder = 'border-yellow-200';
-            colorBadge = 'bg-yellow-500 text-white';
+            colorCard = 'border-amber-200 bg-amber-50/40';
+            colorBadge = 'bg-amber-100 text-amber-800 border-amber-300';
+            colorBarra = 'bg-amber-500';
+        } else if (estado === 'CRITICO') {
+            colorCard = 'border-red-200 bg-red-50/40';
+            colorBadge = 'bg-red-100 text-red-800 border-red-300';
+            colorBarra = 'bg-red-600';
         }
 
-        const htmlItem = `
-            <div class="${colorBg} border ${colorBorder} p-4 rounded-2xl shadow-sm space-y-3">
-                <div class="flex justify-between items-center">
+        const lat = c.latitud || 10.39972;
+        const lng = c.longitud || -75.51444;
+
+        const htmlCard = `
+            <div class="p-4 ${colorCard} border rounded-2xl shadow-sm space-y-3 transition-all hover:shadow-md">
+                <div class="flex justify-between items-start">
                     <div>
-                        <span class="font-black text-slate-800 text-lg">${item.id}</span>
-                        <p class="text-xs text-slate-500 font-medium">
-                            <i class="fa-solid fa-location-dot mr-1"></i>${item.ubicacion || 'Sin ubicación'}
-                        </p>
+                        <span class="font-black text-slate-800 text-base">${id}</span>
+                        <p class="text-xs text-slate-500 font-medium"><i class="fa-solid fa-location-dot mr-1 text-emerald-600"></i>${c.ubicacion || 'Punto de Recolección'}</p>
                     </div>
-                    <span class="${colorBadge} text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                        ${estado} (${porcentaje}%)
+                    <span class="px-2.5 py-0.5 text-[10px] font-black rounded-full border ${colorBadge}">
+                        ${estado}
                     </span>
                 </div>
 
-                ${item.latitud && item.longitud ? `
-                    <a href="https://www.google.com/maps/search/?api=1&query=${item.latitud},${item.longitud}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-white border border-slate-300 text-slate-700 font-semibold py-2 rounded-xl text-xs shadow-sm hover:bg-slate-50 transition-colors">
-                        <i class="fa-solid fa-map-location-dot text-blue-600"></i> Cómo llegar (Navegar)
-                    </a>
-                ` : ''}
+                <div>
+                    <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                        <span>Nivel actual:</span>
+                        <span>${porcentaje}%</span>
+                    </div>
+                    <div class="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden border border-slate-300/40">
+                        <div class="${colorBarra} h-2.5 rounded-full transition-all duration-500" style="width: ${porcentaje}%"></div>
+                    </div>
+                </div>
 
-                <button onclick="confirmarRecoleccion('${item.id}')" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-sm">
-                    <i class="fa-solid fa-check"></i> Confirmar Recolección
-                </button>
+                <div class="flex gap-2 pt-1">
+                    <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" 
+                       class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors">
+                        <i class="fa-solid fa-location-arrow text-blue-600"></i>
+                        <span>Navegar</span>
+                    </a>
+                    <button onclick="abrirModalRecoleccion('${id}')" 
+                            class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Vaciar</span>
+                    </button>
+                </div>
             </div>
         `;
-        contenedorLista.insertAdjacentHTML('beforeend', htmlItem);
+        contenedor.insertAdjacentHTML('beforeend', htmlCard);
     });
 }
 
-// 4. CONFIRMAR RECOLECCIÓN (MODAL CUSTOM - POST /recolecciones)
-let canecaAConfirmar = null;
+// 5. MODAL TÁCTIL DE VACIADO
+const modalConfirmar = document.getElementById('modalConfirmarRecoleccion');
+const btnCancelar = document.getElementById('btnCancelarRecoleccion');
+const btnConfirmar = document.getElementById('btnConfirmarRecoleccion');
 
-const modalRecoleccion = document.getElementById('modalConfirmarRecoleccion');
-const btnCancelarRecoleccion = document.getElementById('btnCancelarRecoleccion');
-const btnEjecutarRecoleccion = document.getElementById('btnEjecutarRecoleccion');
-
-// Disparador desde el botón de la tarjeta
-window.confirmarRecoleccion = function(canecaId) {
-    canecaAConfirmar = canecaId;
-    const textDisplay = document.getElementById('idCanecaRecoleccionText');
-    if (textDisplay) textDisplay.textContent = canecaId;
-    if (modalRecoleccion) modalRecoleccion.classList.remove('hidden');
+window.abrirModalRecoleccion = function(id) {
+    canecaAConfirmarId = id;
+    const textDisplay = document.getElementById('modalCanecaIdText');
+    if (textDisplay) textDisplay.textContent = id;
+    if (modalConfirmar) modalConfirmar.classList.remove('hidden');
 };
 
-// Evento: Cancelar o cerrar modal
-if (btnCancelarRecoleccion) {
-    btnCancelarRecoleccion.addEventListener('click', () => {
-        if (modalRecoleccion) modalRecoleccion.classList.add('hidden');
-        canecaAConfirmar = null;
+if (btnCancelar) {
+    btnCancelar.addEventListener('click', () => {
+        if (modalConfirmar) modalConfirmar.classList.add('hidden');
+        canecaAConfirmarId = null;
     });
 }
 
-// Evento: Confirmar y enviar POST a la API
-if (btnEjecutarRecoleccion) {
-    btnEjecutarRecoleccion.addEventListener('click', async () => {
-        if (!canecaAConfirmar) return;
+if (btnConfirmar) {
+    btnConfirmar.addEventListener('click', async () => {
+        if (!canecaAConfirmarId) return;
 
-        btnEjecutarRecoleccion.textContent = 'Guardando...';
-        btnEjecutarRecoleccion.disabled = true;
+        btnConfirmar.disabled = true;
+        btnConfirmar.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Registrando...`;
 
         try {
-            const respuesta = await fetch(`${API_BASE_URL}/recolecciones`, {
+            const respuesta = await fetch(`${API_BASE_URL}/canecas/${canecaAConfirmarId}/vaciar`, {
                 method: 'POST',
-                headers: {
+                headers: { 
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ canecaId: canecaAConfirmar })
+                }
             });
 
-            if (respuesta.ok) {
-                if (modalRecoleccion) modalRecoleccion.classList.add('hidden');
-                cargarRutasPriorizadas(); // Recargar la ruta en vivo
+            if (respuesta.ok || respuesta.status === 204) {
+                if (modalConfirmar) modalConfirmar.classList.add('hidden');
+                cargarRutaOperador();
             } else {
-                const errorData = await respuesta.json().catch(() => ({}));
-                alert(`Error al registrar recolección: ${errorData.title || errorData.message || 'Intente nuevamente.'}`);
+                const respFallback = await fetch(`${API_BASE_URL}/recolecciones`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ canecaId: canecaAConfirmarId })
+                });
+
+                if (respFallback.ok) {
+                    if (modalConfirmar) modalConfirmar.classList.add('hidden');
+                    cargarRutaOperador();
+                } else {
+                    alert('No se pudo confirmar la recolección.');
+                }
             }
         } catch (error) {
-            console.error("Error en recolección:", error);
-            alert('Error de conexión al registrar la recolección.');
+            console.error("Error al registrar recolección:", error);
+            alert('Error de conexión al intentar vaciar el contenedor.');
         } finally {
-            btnEjecutarRecoleccion.innerHTML = '<i class="fa-solid fa-check"></i> Vaciar';
-            btnEjecutarRecoleccion.disabled = false;
-            canecaAConfirmar = null;
+            btnConfirmar.disabled = false;
+            btnConfirmar.innerHTML = `<i class="fa-solid fa-check"></i><span>Confirmar</span>`;
+            canecaAConfirmarId = null;
         }
     });
 }
 
-// 5. EVENTOS Y ARRANQUE INICIAL (PUNTO 6: AUTO-REFRESH)
+// 6. INICIALIZACIÓN Y EVENTOS
 document.addEventListener('DOMContentLoaded', () => {
-    const btnLogout = document.getElementById('btnLogoutOperador');
+    const userDisplay = document.getElementById('userNameDisplay');
+    if (userDisplay) userDisplay.textContent = emailOperador;
+
+    cargarRutaOperador();
+
+    // Auto-refresco de sincronización cada 5 segundos
+    setInterval(cargarRutaOperador, 5000);
+
+    const btnLogout = document.getElementById('btnLogout');
     if (btnLogout) {
         btnLogout.addEventListener('click', () => {
             localStorage.removeItem('ecoRutas_jwt');
@@ -214,14 +271,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const btnActualizar = document.getElementById('btnActualizarRuta');
+    const btnActualizar = document.getElementById('btnActualizarOperador');
     if (btnActualizar) {
-        btnActualizar.addEventListener('click', cargarRutasPriorizadas);
+        btnActualizar.addEventListener('click', cargarRutaOperador);
     }
-
-    // 1. Carga inicial al abrir la aplicación
-    cargarRutasPriorizadas();
-
-    // 2. PUNTO 6: Auto-refresh periódico cada 8 segundos (8000 ms)
-    setInterval(cargarRutasPriorizadas, 8000);
 });
