@@ -59,7 +59,9 @@ namespace EcoRutas.Api.Services
                 nuevaMedicion.Id,
                 caneca.Id,
                 porcentaje,
-                estado, nuevaMedicion.FechaLectura
+                nuevaMedicion.DistanciaCm,
+                estado, 
+                nuevaMedicion.FechaLectura
                 );
         }
 
@@ -86,6 +88,7 @@ namespace EcoRutas.Api.Services
                     m.Id,
                     m.CanecaId,
                     m.PorcentajeLlenado,
+                    m.DistanciaCm,
                     m.EstadoClasificado,
                     m.FechaLectura))
                 .ToListAsync();
