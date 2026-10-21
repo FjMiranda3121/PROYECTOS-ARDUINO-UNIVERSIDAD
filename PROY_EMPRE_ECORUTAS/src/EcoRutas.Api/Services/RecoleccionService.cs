@@ -88,8 +88,21 @@ namespace EcoRutas.Api.Services
             _context.Recolecciones.Add(recoleccion);
 
             // APLICACIÓN DE LA REGLA RN08:
-            // Al confirmarse el vaciado físico, la caneca restablece su estado a "NORMAL"
+            // Al confirmarse el vaciado físico, la caneca restablece su estado y su porcentaje a 0%
             caneca.EstadoActual = "NORMAL";
+            caneca.PorcentajeLlenado = 0; // <--- CORRECCIÓN 1: Resetear porcentaje en la entidad
+
+            // CORRECCIÓN 2: Insertar nueva medición de 0% en la tabla de telemetría para el Dashboard
+            var medicionVaciado = new Medicion
+            {
+                Id = Guid.NewGuid(),
+                CanecaId = dto.CanecaId,
+                DistanciaCm = 100, // Distancia máxima equivalente a contenedor vacío
+                PorcentajeLlenado = 0,
+                EstadoClasificado = "NORMAL",
+                FechaLectura = DateTime.UtcNow
+            };
+            _context.Mediciones.Add(medicionVaciado);
 
             // Persistencia transaccional atómica en PostgreSQL (RN06)
             await _context.SaveChangesAsync();
